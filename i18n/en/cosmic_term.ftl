@@ -57,6 +57,8 @@ focus-follow-mouse = Typing focus follows mouse
 advanced = Advanced
 show-headerbar = Show header
 show-header-description = Reveal the header from the right-click menu.
+shell-program = Shell program
+shell-program-description = Override the default shell.
 
 # Find
 find-placeholder = Find...

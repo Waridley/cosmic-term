@@ -122,6 +122,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             shell_args.push(arg);
         }
     }
+    if shell_program_opt.is_none() {
+        shell_program_opt = config.shell_program.clone();
+    }
 
     let startup_options = if let Some(shell_program) = shell_program_opt {
         let options = tty::Options {
@@ -299,6 +302,7 @@ pub enum Message {
     ProfileSyntaxTheme(ProfileId, ColorSchemeKind, usize),
     ProfileTabTitle(ProfileId, String),
     SelectAll(Option<segmented_button::Entity>),
+    SetShell(String),
     ShowAdvancedFontSettings(bool),
     ShowHeaderBar(bool),
     SyntaxTheme(ColorSchemeKind, usize),
@@ -1113,6 +1117,12 @@ impl App {
             widget::settings::item::builder(fl!("show-headerbar"))
                 .description(fl!("show-header-description"))
                 .toggler(self.config.show_headerbar, Message::ShowHeaderBar),
+        ).add(
+            widget::settings::item::builder(fl!("shell-program"))
+              .description(fl!("shell-program-description"))
+              .control(widget::TextInput::new("/bin/bash", self.config.shell_program.as_deref().unwrap_or(""))
+                .on_input(|value| Message::SetShell(value))
+              )
         );
 
         widget::settings::view_column(vec![
@@ -1972,6 +1982,17 @@ impl Application for App {
                     }
                 }
                 return self.update_focus();
+            }
+            Message::SetShell(path) => {
+                let path = if path.is_empty() {
+                    None
+                } else {
+                    Some(path)
+                };
+                if self.config.shell_program != path {
+                    self.config.shell_program = path;
+                    return self.save_config();
+                }
             }
             Message::ShowHeaderBar(show_headerbar) => {
                 if show_headerbar != self.config.show_headerbar {
